@@ -1,8 +1,8 @@
 """
-Application configuration settings.
+Application configuration.
 
-This file loads environment variables from the .env file
-and makes them available to the Flask application.
+This module loads environment variables and provides
+configuration classes for different environments.
 """
 
 import os
@@ -13,7 +13,7 @@ load_dotenv()
 
 
 class Config:
-    """Base configuration class."""
+    """Base configuration."""
 
     SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -29,3 +29,22 @@ class Config:
     )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+class DevelopmentConfig(Config):
+    """Development configuration."""
+
+    DEBUG = True
+
+
+class ProductionConfig(Config):
+    """Production configuration."""
+
+    DEBUG = False
+
+
+config = {
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "default": DevelopmentConfig
+}

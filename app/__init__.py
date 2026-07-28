@@ -1,5 +1,5 @@
 """
-Application factory.
+Application Factory
 
 Creates and configures the Flask application.
 """
@@ -7,32 +7,44 @@ Creates and configures the Flask application.
 from flask import Flask
 from flask_cors import CORS
 
-from app.config import Config
+from app.config import config
 from app.extensions import db, migrate, jwt, bcrypt
 
 
-def create_app():
-    """Application factory."""
+def create_app(config_name="default"):
+    """
+    Creates the Flask application.
+    """
 
     app = Flask(__name__)
 
-    # Load configuration
-    app.config.from_object(Config)
+    app.config.from_object(config[config_name])
 
-    # Enable CORS for React frontend
     CORS(app)
 
-    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+
     jwt.init_app(app)
+
     bcrypt.init_app(app)
+
+    # Import models so Flask-Migrate detects them
+    from app.models import (
+        User,
+        Student,
+        Block,
+        Room,
+        Allocation,
+        MaintenanceRequest,
+        Payment,
+    )
 
     @app.route("/")
     def home():
         return {
-            "message": "Hostel Management API is running!",
+            "message": "Hostel Management API Running Successfully",
             "status": "success"
-        }
+        }, 200
 
     return app
