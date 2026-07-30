@@ -81,8 +81,22 @@ class Student(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "registration_number": self.registration_number,
+            "gender": self.gender,
             "phone": self.phone,
             "course": self.course,
             "year_of_study": self.year_of_study,
-        }
+            "guardian_name": self.guardian_name,
+            "guardian_phone": self.guardian_phone,
+            "created_at": (
+                self.created_at.isoformat()
+                if self.created_at
+                else None
+            ),
+            "updated_at": (
+                self.updated_at.isoformat()
+                if self.updated_at
+                else None
+        )
+    }

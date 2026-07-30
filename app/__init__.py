@@ -41,8 +41,10 @@ def create_app(config_name="default"):
 
     # Register authentication routes
     from app.routes.auth_routes import auth_bp
+    from app.routes.student_routes import student_bp
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(student_bp)
 
     @app.route("/")
     def home():
