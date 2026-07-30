@@ -39,12 +39,16 @@ def create_app(config_name="default"):
         Payment,
     )
 
-    # Register authentication routes
+    # Register application routes
     from app.routes.auth_routes import auth_bp
     from app.routes.student_routes import student_bp
+    from app.routes.block_routes import block_bp
+    from app.routes.room_routes import room_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(student_bp)
+    app.register_blueprint(block_bp)
+    app.register_blueprint(room_bp)
 
     @app.route("/")
     def home():
