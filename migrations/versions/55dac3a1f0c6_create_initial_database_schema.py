@@ -1,8 +1,8 @@
-"""Initial database schema
+"""create initial database schema
 
-Revision ID: 76c888dc792c
+Revision ID: 55dac3a1f0c6
 Revises: 
-Create Date: 2026-07-18 08:21:13.439015
+Create Date: 2026-07-30 11:14:02.245816
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '76c888dc792c'
+revision = '55dac3a1f0c6'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,7 +21,9 @@ def upgrade():
     op.create_table('blocks',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=20), nullable=False),
-    sa.Column('gender', sa.String(length=20), nullable=True),
+    sa.Column('gender', sa.Enum('Male', 'Female', 'Mixed', name='block_gender'), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
@@ -33,6 +35,7 @@ def upgrade():
     sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('role', sa.Enum('admin', 'warden', 'finance', 'student', name='user_roles'), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
@@ -43,7 +46,9 @@ def upgrade():
     sa.Column('floor', sa.Integer(), nullable=True),
     sa.Column('capacity', sa.Integer(), nullable=True),
     sa.Column('occupied', sa.Integer(), nullable=True),
-    sa.Column('status', sa.String(length=20), nullable=True),
+    sa.Column('status', sa.Enum('Available', 'Occupied', 'Maintenance', name='room_status'), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['block_id'], ['blocks.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -51,13 +56,14 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('registration_number', sa.String(length=30), nullable=False),
-    sa.Column('gender', sa.String(length=10), nullable=True),
+    sa.Column('gender', sa.Enum('Male', 'Female', name='gender_types'), nullable=True),
     sa.Column('phone', sa.String(length=20), nullable=True),
     sa.Column('course', sa.String(length=100), nullable=True),
     sa.Column('year_of_study', sa.Integer(), nullable=True),
     sa.Column('guardian_name', sa.String(length=100), nullable=True),
     sa.Column('guardian_phone', sa.String(length=20), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('registration_number'),
@@ -65,36 +71,41 @@ def upgrade():
     )
     op.create_table('maintenance_requests',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('student_id', sa.Integer(), nullable=True),
-    sa.Column('room_id', sa.Integer(), nullable=True),
-    sa.Column('title', sa.String(length=150), nullable=True),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('priority', sa.String(length=20), nullable=True),
-    sa.Column('status', sa.String(length=20), nullable=True),
+    sa.Column('student_id', sa.Integer(), nullable=False),
+    sa.Column('room_id', sa.Integer(), nullable=False),
+    sa.Column('title', sa.String(length=150), nullable=False),
+    sa.Column('description', sa.Text(), nullable=False),
+    sa.Column('priority', sa.Enum('Low', 'Medium', 'High', 'Urgent', name='priority_levels'), nullable=True),
+    sa.Column('status', sa.Enum('Pending', 'In Progress', 'Resolved', name='maintenance_status'), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['room_id'], ['rooms.id'], ),
     sa.ForeignKeyConstraint(['student_id'], ['students.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('payments',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('student_id', sa.Integer(), nullable=True),
-    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=True),
-    sa.Column('semester', sa.String(length=50), nullable=True),
-    sa.Column('payment_date', sa.Date(), nullable=True),
-    sa.Column('status', sa.String(length=20), nullable=True),
-    sa.Column('reference_number', sa.String(length=100), nullable=True),
+    sa.Column('student_id', sa.Integer(), nullable=False),
+    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('semester', sa.String(length=30), nullable=False),
+    sa.Column('payment_date', sa.DateTime(), nullable=True),
+    sa.Column('status', sa.Enum('Pending', 'Paid', 'Failed', name='payment_status'), nullable=True),
+    sa.Column('reference_number', sa.String(length=100), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['student_id'], ['students.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('reference_number')
     )
     op.create_table('room_allocations',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('student_id', sa.Integer(), nullable=True),
-    sa.Column('room_id', sa.Integer(), nullable=True),
-    sa.Column('allocation_date', sa.Date(), nullable=True),
-    sa.Column('checkout_date', sa.Date(), nullable=True),
-    sa.Column('status', sa.String(length=20), nullable=True),
+    sa.Column('student_id', sa.Integer(), nullable=False),
+    sa.Column('room_id', sa.Integer(), nullable=False),
+    sa.Column('allocation_date', sa.DateTime(), nullable=True),
+    sa.Column('checkout_date', sa.DateTime(), nullable=True),
+    sa.Column('status', sa.Enum('Active', 'Completed', name='allocation_status'), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['room_id'], ['rooms.id'], ),
     sa.ForeignKeyConstraint(['student_id'], ['students.id'], ),
     sa.PrimaryKeyConstraint('id')
