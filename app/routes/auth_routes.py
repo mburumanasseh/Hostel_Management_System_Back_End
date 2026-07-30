@@ -12,12 +12,10 @@ auth_bp = Blueprint(
     url_prefix="/api/auth"
 )
 
-
 auth_bp.route(
     "/register",
     methods=["POST"]
 )(register)
-
 
 auth_bp.route(
     "/login",
@@ -28,3 +26,4 @@ auth_bp.route(
     "/me",
     methods=["GET"]
 )(get_current_user)
+

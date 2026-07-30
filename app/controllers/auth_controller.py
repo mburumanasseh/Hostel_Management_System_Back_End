@@ -111,3 +111,5 @@ def get_current_user():
         return jsonify({
             "error": str(error)
         }), 500
+        
+        
