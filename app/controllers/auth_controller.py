@@ -1,3 +1,4 @@
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import request, jsonify
 from marshmallow import ValidationError
 
@@ -81,6 +82,29 @@ def login():
         return jsonify({
             "error": str(error)
         }), 401
+
+    except Exception as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 500
+        
+@jwt_required()
+def get_current_user():
+
+    try:
+        user_id = get_jwt_identity()
+
+        user = AuthService.get_user_by_id(user_id)
+
+        if not user:
+            return jsonify({
+                "error": "User not found"
+            }), 404
+
+        return jsonify({
+            "user": user.to_dict()
+        }), 200
 
     except Exception as error:
 

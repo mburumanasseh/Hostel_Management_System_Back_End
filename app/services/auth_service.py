@@ -45,13 +45,7 @@ class AuthService:
             email=email
         ).first()
 
-        if not user:
-            raise ValueError("Invalid email or password")
-
-        if not bcrypt.check_password_hash(
-            user.password,
-            password
-        ):
+        if not user or not bcrypt.check_password_hash(user.password, password):
             raise ValueError("Invalid email or password")
 
         access_token = create_access_token(
@@ -62,3 +56,9 @@ class AuthService:
         )
 
         return user, access_token
+
+    @staticmethod
+    def get_user_by_id(user_id):
+
+        # Using db.session.get is preferred in modern Flask-SQLAlchemy / SQLAlchemy 2.0+
+        return db.session.get(User, int(user_id))
