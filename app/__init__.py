@@ -45,6 +45,7 @@ def create_app(config_name="default"):
     from app.routes.block_routes import block_bp
     from app.routes.room_routes import room_bp
     from app.routes.allocation_routes import allocation_bp
+    from app.routes.maintenance_routes import maintenance_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(student_bp)
