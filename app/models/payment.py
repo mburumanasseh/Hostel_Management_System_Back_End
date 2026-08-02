@@ -69,6 +69,7 @@ class Payment(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "student_id": self.student_id,
             "amount": float(self.amount),
             "semester": self.semester,
             "payment_date": self.payment_date,

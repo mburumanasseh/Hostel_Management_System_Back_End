@@ -46,11 +46,14 @@ def create_app(config_name="default"):
     from app.routes.room_routes import room_bp
     from app.routes.allocation_routes import allocation_bp
     from app.routes.maintenance_routes import maintenance_bp
+    from app.routes.payment_routes import payment_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(student_bp)
     app.register_blueprint(block_bp)
     app.register_blueprint(room_bp)
+    app.register_blueprint(maintenance_bp)
+    app.register_blueprint(payment_bp)
     app.register_blueprint(allocation_bp)
 
     @app.route("/")
