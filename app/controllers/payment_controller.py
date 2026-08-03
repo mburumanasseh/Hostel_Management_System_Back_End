@@ -1,5 +1,7 @@
 from flask import request, jsonify
 from marshmallow import ValidationError
+from flask_jwt_extended import get_jwt_identity
+from app.models.student import Student
 
 from app.schemas.payment_schema import (
     PaymentSchema,
@@ -207,6 +209,39 @@ def delete_payment(payment_id):
         return jsonify({
             "error": str(error)
         }), 404
+
+    except Exception as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 500
+        
+
+def get_my_payments():
+
+    try:
+
+        user_id = int(get_jwt_identity())
+
+        student = Student.query.filter_by(
+            user_id=user_id
+        ).first()
+
+        if not student:
+            return jsonify({
+                "error": "Student profile not found"
+            }), 404
+
+        payments = PaymentService.get_student_payments(
+            student.id
+        )
+
+        return jsonify({
+            "payments": [
+                payment.to_dict()
+                for payment in payments
+            ]
+        }), 200
 
     except Exception as error:
 

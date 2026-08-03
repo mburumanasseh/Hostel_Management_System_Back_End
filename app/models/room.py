@@ -73,7 +73,9 @@ class Room(db.Model):
         return {
             "id": self.id,
             "room_number": self.room_number,
+            "floor": self.floor,
             "capacity": self.capacity,
             "occupied": self.occupied,
             "status": self.status,
+            "block": self.block.to_dict() if self.block else None
         }

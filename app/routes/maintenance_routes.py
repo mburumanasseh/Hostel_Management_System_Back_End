@@ -7,6 +7,7 @@ from app.controllers.maintenance_controller import (
     get_all_maintenance_requests,
     get_maintenance_request,
     get_student_maintenance_requests,
+    get_my_maintenance_requests,
     update_maintenance_status,
     delete_maintenance_request
 )
@@ -49,6 +50,19 @@ maintenance_bp.route(
         "warden"
     )(
         get_all_maintenance_requests
+    )
+)
+
+# ==========================================
+# GET CURRENT STUDENT'S MAINTENANCE REQUESTS
+# ==========================================
+
+maintenance_bp.route(
+    "/my",
+    methods=["GET"]
+)(
+    jwt_required()(
+        get_my_maintenance_requests
     )
 )
 

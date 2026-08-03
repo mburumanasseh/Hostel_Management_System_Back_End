@@ -1,10 +1,12 @@
 from flask import Blueprint
+from flask_jwt_extended import jwt_required
 
 from app.controllers.payment_controller import (
     create_payment,
     get_all_payments,
     get_payment,
     get_student_payments,
+    get_my_payments,
     update_payment_status,
     delete_payment
 )
@@ -57,7 +59,26 @@ payment_bp.route(
 
 
 # =====================================================
+# GET CURRENT STUDENT'S PAYMENTS
+# STUDENT ONLY / AUTHENTICATED USERS
+# =====================================================
+
+payment_bp.route(
+    "/my",
+    methods=["GET"]
+)(
+    jwt_required()(
+        get_my_payments
+    )
+)
+
+
+# =====================================================
 # GET ONE PAYMENT
+# ADMIN + FINANCE + WARDEN
+#
+# Students use /my instead so they cannot request
+# another student's payment by changing the ID.
 # =====================================================
 
 payment_bp.route(
@@ -67,8 +88,7 @@ payment_bp.route(
     role_required(
         "admin",
         "finance",
-        "warden",
-        "student"
+        "warden"
     )(
         get_payment
     )
@@ -76,7 +96,10 @@ payment_bp.route(
 
 
 # =====================================================
-# GET STUDENT PAYMENTS
+# GET PAYMENTS FOR A SPECIFIC STUDENT
+# ADMIN + FINANCE + WARDEN
+#
+# Students should use /my instead.
 # =====================================================
 
 payment_bp.route(
@@ -86,8 +109,7 @@ payment_bp.route(
     role_required(
         "admin",
         "finance",
-        "warden",
-        "student"
+        "warden"
     )(
         get_student_payments
     )

@@ -178,6 +178,49 @@ def get_active_allocation(student_id):
         }), 500
 
 
+def get_my_allocation():
+
+    try:
+        user_id = get_jwt_identity()
+
+        student = StudentService.get_student_by_user_id(
+            int(user_id)
+        )
+
+        if not student:
+            return jsonify({
+                "error": "Student profile not found"
+            }), 404
+
+        allocation = (
+            AllocationService.get_active_allocation(
+                student.id
+            )
+        )
+
+        if not allocation:
+            return jsonify({
+                "message": "You have no active room allocation",
+                "allocation": None
+            }), 200
+
+        return jsonify({
+            "allocation": allocation.to_dict()
+        }), 200
+
+    except ValueError as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 404
+
+    except Exception as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 500
+
+
 def complete_allocation(allocation_id):
 
     try:

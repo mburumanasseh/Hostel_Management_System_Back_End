@@ -1,7 +1,11 @@
 from functools import wraps
 
 from flask import jsonify
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import (
+    jwt_required,
+    get_jwt,
+    get_jwt_identity
+)
 
 
 def role_required(*allowed_roles):
@@ -18,7 +22,10 @@ def role_required(*allowed_roles):
             if user_role not in allowed_roles:
                 return jsonify({
                     "error": "Access denied",
-                    "message": "You do not have permission to access this resource"
+                    "message": (
+                        "You do not have permission "
+                        "to access this resource"
+                    )
                 }), 403
 
             return function(*args, **kwargs)
@@ -27,12 +34,10 @@ def role_required(*allowed_roles):
 
     return decorator
 
-from app.utils.authorization import role_required
 
-@role_required("admin")
-def admin_test():
+def get_current_user_id():
+    """
+    Return the ID of the currently authenticated user.
+    """
 
-    return jsonify({
-        "message": "Welcome Admin!",
-        "status": "success"
-    }), 200
+    return int(get_jwt_identity())

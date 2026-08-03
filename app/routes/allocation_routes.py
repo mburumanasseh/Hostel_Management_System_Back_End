@@ -6,6 +6,7 @@ from app.controllers.allocation_controller import (
     get_allocation,
     get_student_allocations,
     get_active_allocation,
+    get_my_allocation,
     complete_allocation,
     delete_allocation
 )
@@ -47,12 +48,21 @@ allocation_bp.route(
 )
 
 
+# Student can view their own active allocation
+allocation_bp.route(
+    "/my",
+    methods=["GET"]
+)(
+    role_required("student")(get_my_allocation)
+)
+
+
 # Admin and warden can view a student's allocation history
 allocation_bp.route(
     "/student/<int:student_id>",
     methods=["GET"]
 )(
-    role_required("admin", "warden")(get_student_allocations)
+    role_required("admin", "warden",)(get_student_allocations)
 )
 
 

@@ -5,13 +5,17 @@ Stores room allocation history for students.
 """
 
 from datetime import datetime
+
 from app.extensions import db
 
 
 class Allocation(db.Model):
     __tablename__ = "room_allocations"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     student_id = db.Column(
         db.Integer,
@@ -30,7 +34,9 @@ class Allocation(db.Model):
         default=datetime.utcnow
     )
 
-    checkout_date = db.Column(db.DateTime)
+    checkout_date = db.Column(
+        db.DateTime
+    )
 
     status = db.Column(
         db.Enum(
@@ -52,7 +58,9 @@ class Allocation(db.Model):
         onupdate=datetime.utcnow
     )
 
-    # Relationships
+    # ==========================================
+    # RELATIONSHIPS
+    # ==========================================
 
     student = db.relationship(
         "Student",
@@ -64,12 +72,51 @@ class Allocation(db.Model):
         back_populates="allocations"
     )
 
+    # ==========================================
+    # CONVERT TO DICTIONARY
+    # ==========================================
+
     def to_dict(self):
         return {
             "id": self.id,
             "student_id": self.student_id,
-            "room_id": self.room_id,
-            "allocation_date": self.allocation_date,
-            "checkout_date": self.checkout_date,
-            "status": self.status
+
+            "allocation_date": (
+                self.allocation_date.isoformat()
+                if self.allocation_date
+                else None
+            ),
+
+            "checkout_date": (
+                self.checkout_date.isoformat()
+                if self.checkout_date
+                else None
+            ),
+
+            "status": self.status,
+
+            # ==================================
+            # ROOM INFORMATION
+            # ==================================
+
+            "room": {
+                "id": self.room.id,
+                "room_number": self.room.room_number,
+                "floor": self.room.floor,
+                "capacity": self.room.capacity,
+                "status": self.room.status,
+
+                # ==============================
+                # BLOCK INFORMATION
+                # ==============================
+
+                "block": {
+                    "id": self.room.block.id,
+                    "name": self.room.block.name
+                }
+                if self.room.block
+                else None
+            }
+            if self.room
+            else None
         }

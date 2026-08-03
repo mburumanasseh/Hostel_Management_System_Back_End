@@ -73,6 +73,12 @@ class StudentService:
         return db.session.get(Student, student_id)
 
     @staticmethod
+    def get_student_by_user_id(user_id):
+        return Student.query.filter_by(
+            user_id=user_id
+        ).first()
+        
+    @staticmethod
     def update_student(student_id, data):
 
         student = db.session.get(Student, student_id)
