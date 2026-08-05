@@ -1,3 +1,4 @@
+
 """
 Import all database models.
 
@@ -11,6 +12,8 @@ from .room import Room
 from .allocation import Allocation
 from .maintenance import MaintenanceRequest
 from .payment import Payment
+from .hostel_fee import HostelFee
+
 
 __all__ = [
     "User",
@@ -20,4 +23,5 @@ __all__ = [
     "Allocation",
     "MaintenanceRequest",
     "Payment",
+    "HostelFee",
 ]

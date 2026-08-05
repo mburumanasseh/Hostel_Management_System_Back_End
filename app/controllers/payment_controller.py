@@ -1,6 +1,5 @@
 
 from flask import request, jsonify
-from flask_jwt_extended import get_jwt_identity
 from marshmallow import ValidationError
 
 from app.models.student import Student
@@ -209,10 +208,10 @@ def update_payment_status(payment_id):
 
 # =====================================================
 # DELETE PAYMENT
-# Finance Officer / Admin
+# Admin only
 # =====================================================
 
-@role_required("finance", "admin")
+@role_required("admin")
 def delete_payment(payment_id):
 
     try:
@@ -281,12 +280,26 @@ def get_my_payments():
 # =====================================================
 # GET CURRENT STUDENT FINANCIAL STATUS
 # Student only
+#
+# Example:
+# GET /api/payments/my/financial-status
+#     ?semester=Semester%201%202026
 # =====================================================
 
 @role_required("student")
 def get_my_financial_status():
 
     try:
+
+        semester = request.args.get(
+            "semester"
+        )
+
+        if not semester:
+
+            return jsonify({
+                "error": "Semester is required"
+            }), 400
 
         user_id = get_current_user_id()
 
@@ -303,7 +316,8 @@ def get_my_financial_status():
         financial_status = (
             PaymentService
             .get_student_financial_status(
-                student.id
+                student.id,
+                semester
             )
         )
 
@@ -327,6 +341,10 @@ def get_my_financial_status():
 # =====================================================
 # GET ANY STUDENT FINANCIAL STATUS
 # Finance Officer / Admin
+#
+# Example:
+# GET /api/payments/student/5/financial-status
+#     ?semester=Semester%201%202026
 # =====================================================
 
 @role_required("finance", "admin")
@@ -334,10 +352,21 @@ def get_student_financial_status(student_id):
 
     try:
 
+        semester = request.args.get(
+            "semester"
+        )
+
+        if not semester:
+
+            return jsonify({
+                "error": "Semester is required"
+            }), 400
+
         financial_status = (
             PaymentService
             .get_student_financial_status(
-                student_id
+                student_id,
+                semester
             )
         )
 

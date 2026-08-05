@@ -47,6 +47,7 @@ def create_app(config_name="default"):
     from app.routes.allocation_routes import allocation_bp
     from app.routes.maintenance_routes import maintenance_bp
     from app.routes.payment_routes import payment_bp
+    from app.routes.hostel_fee_routes import hostel_fee_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(student_bp)
@@ -55,6 +56,7 @@ def create_app(config_name="default"):
     app.register_blueprint(maintenance_bp)
     app.register_blueprint(payment_bp)
     app.register_blueprint(allocation_bp)
+    app.register_blueprint(hostel_fee_bp)
 
     @app.route("/")
     def home():

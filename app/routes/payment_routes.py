@@ -13,6 +13,8 @@ from app.controllers.payment_controller import (
     get_student_financial_status
 )
 
+from app.utils.authorization import role_required
+
 
 payment_bp = Blueprint(
     "payments",
@@ -66,7 +68,7 @@ payment_bp.route(
 # =====================================================
 
 payment_bp.route(
-    "/my/status",
+    "/my/financial-status",
     methods=["GET"]
 )(
     get_my_financial_status
@@ -105,7 +107,7 @@ payment_bp.route(
 # =====================================================
 
 payment_bp.route(
-    "/student/<int:student_id>/status",
+    "/student/<int:student_id>/financial-status",
     methods=["GET"]
 )(
     get_student_financial_status

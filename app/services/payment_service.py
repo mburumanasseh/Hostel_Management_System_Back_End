@@ -4,6 +4,7 @@ from decimal import Decimal
 from app.extensions import db
 from app.models.payment import Payment
 from app.models.student import Student
+from app.models.hostel_fee import HostelFee
 
 
 class PaymentService:
@@ -144,14 +145,19 @@ class PaymentService:
 
         return payment
 
-    # =====================================================
+        # =====================================================
     # GET STUDENT FINANCIAL STATUS
     # =====================================================
 
     @staticmethod
     def get_student_financial_status(
-        student_id
+        student_id,
+        semester
     ):
+
+        # ================================================
+        # CHECK STUDENT
+        # ================================================
 
         student = db.session.get(
             Student,
@@ -163,9 +169,31 @@ class PaymentService:
                 "Student not found"
             )
 
+        # ================================================
+        # FIND HOSTEL FEE FOR SEMESTER
+        # ================================================
+
+        hostel_fee = HostelFee.query.filter_by(
+            semester=semester
+        ).first()
+
+        if not hostel_fee:
+            raise ValueError(
+                "Hostel fee not found for this semester"
+            )
+
+        # ================================================
+        # GET PAYMENTS FOR THIS STUDENT + SEMESTER
+        # ================================================
+
         payments = Payment.query.filter_by(
-            student_id=student_id
+            student_id=student_id,
+            semester=semester
         ).all()
+
+        # ================================================
+        # CALCULATE PAID AMOUNT
+        # ================================================
 
         total_paid = sum(
             (
@@ -176,6 +204,10 @@ class PaymentService:
             Decimal("0.00")
         )
 
+        # ================================================
+        # CALCULATE PENDING AMOUNT
+        # ================================================
+
         total_pending = sum(
             (
                 payment.amount
@@ -184,6 +216,10 @@ class PaymentService:
             ),
             Decimal("0.00")
         )
+
+        # ================================================
+        # CALCULATE FAILED AMOUNT
+        # ================================================
 
         total_failed = sum(
             (
@@ -194,38 +230,96 @@ class PaymentService:
             Decimal("0.00")
         )
 
+        # ================================================
+        # REQUIRED HOSTEL FEE
+        # ================================================
+
+        required_fee = Decimal(
+            str(hostel_fee.amount)
+        )
+
+        # ================================================
+        # CALCULATE BALANCE
+        # ================================================
+
+        balance = required_fee - total_paid
+
+        # Prevent negative balance
+        if balance < Decimal("0.00"):
+            balance = Decimal("0.00")
+
+        # ================================================
+        # DETERMINE FINANCIAL STATUS
+        # ================================================
+
+        if total_paid >= required_fee:
+            financial_status = "Paid"
+
+        elif total_paid > Decimal("0.00"):
+            financial_status = "Partially Paid"
+
+        elif total_pending > Decimal("0.00"):
+            financial_status = "Pending"
+
+        else:
+            financial_status = "No Payment"
+
+        # ================================================
+        # RETURN FINANCIAL SUMMARY
+        # ================================================
+
         return {
             "student_id": student.id,
+
             "registration_number": (
                 student.registration_number
             ),
+
             "first_name": (
                 student.user.first_name
                 if student.user
                 else None
             ),
+
             "last_name": (
                 student.user.last_name
                 if student.user
                 else None
             ),
+
             "email": (
                 student.user.email
                 if student.user
                 else None
             ),
-            "total_paid": float(total_paid),
-            "total_pending": float(total_pending),
-            "total_failed": float(total_failed),
-            "payment_count": len(payments),
-            "financial_status": (
-                "Paid"
-                if total_paid > 0
-                and total_pending == 0
-                else "Pending"
-                if total_pending > 0
-                else "No Payment"
-            )
+
+            "semester": semester,
+
+            "required_fee": float(
+                required_fee
+            ),
+
+            "total_paid": float(
+                total_paid
+            ),
+
+            "total_pending": float(
+                total_pending
+            ),
+
+            "total_failed": float(
+                total_failed
+            ),
+
+            "balance": float(
+                balance
+            ),
+
+            "payment_count": len(
+                payments
+            ),
+
+            "financial_status": financial_status
         }
 
     # =====================================================
