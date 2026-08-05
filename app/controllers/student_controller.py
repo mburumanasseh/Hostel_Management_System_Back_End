@@ -1,5 +1,4 @@
 from flask import request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 
 from app.schemas.student_schema import StudentSchema
@@ -9,6 +8,11 @@ from app.utils.authorization import role_required
 
 student_schema = StudentSchema()
 
+
+# ============================================================
+# CREATE STUDENT PROFILE
+# ADMIN + WARDEN ONLY
+# ============================================================
 
 @role_required("admin", "warden")
 def create_student():
@@ -53,10 +57,20 @@ def create_student():
         }), 500
 
 
-@jwt_required()
+# ============================================================
+# GET ALL STUDENTS
+# ADMIN + WARDEN ONLY
+#
+# Used by:
+# - Student management
+# - Room allocation
+# ============================================================
+
+@role_required("admin", "warden")
 def get_students():
 
     try:
+
         students = StudentService.get_all_students()
 
         return jsonify({
@@ -73,10 +87,16 @@ def get_students():
         }), 500
 
 
-@jwt_required()
+# ============================================================
+# GET ONE STUDENT
+# ADMIN + WARDEN ONLY
+# ============================================================
+
+@role_required("admin", "warden")
 def get_student(student_id):
 
     try:
+
         student = StudentService.get_student_by_id(
             student_id
         )
@@ -97,10 +117,16 @@ def get_student(student_id):
         }), 500
 
 
+# ============================================================
+# UPDATE STUDENT
+# ADMIN + WARDEN ONLY
+# ============================================================
+
 @role_required("admin", "warden")
 def update_student(student_id):
 
     try:
+
         data = student_schema.load(
             request.get_json(),
             partial=True
@@ -135,10 +161,16 @@ def update_student(student_id):
         }), 500
 
 
+# ============================================================
+# DELETE STUDENT
+# ADMIN ONLY
+# ============================================================
+
 @role_required("admin")
 def delete_student(student_id):
 
     try:
+
         StudentService.delete_student(
             student_id
         )

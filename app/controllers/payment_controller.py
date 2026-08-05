@@ -1,6 +1,8 @@
+
 from flask import request, jsonify
-from marshmallow import ValidationError
 from flask_jwt_extended import get_jwt_identity
+from marshmallow import ValidationError
+
 from app.models.student import Student
 
 from app.schemas.payment_schema import (
@@ -10,6 +12,11 @@ from app.schemas.payment_schema import (
 
 from app.services.payment_service import PaymentService
 
+from app.utils.authorization import (
+    role_required,
+    get_current_user_id
+)
+
 
 payment_schema = PaymentSchema()
 payment_status_schema = PaymentStatusSchema()
@@ -17,8 +24,10 @@ payment_status_schema = PaymentStatusSchema()
 
 # =====================================================
 # CREATE PAYMENT
+# Finance Officer / Admin
 # =====================================================
 
+@role_required("finance", "admin")
 def create_payment():
 
     try:
@@ -64,8 +73,10 @@ def create_payment():
 
 # =====================================================
 # GET ALL PAYMENTS
+# Finance Officer / Admin
 # =====================================================
 
+@role_required("finance", "admin")
 def get_all_payments():
 
     try:
@@ -88,8 +99,10 @@ def get_all_payments():
 
 # =====================================================
 # GET ONE PAYMENT
+# Finance Officer / Admin
 # =====================================================
 
+@role_required("finance", "admin")
 def get_payment(payment_id):
 
     try:
@@ -117,8 +130,10 @@ def get_payment(payment_id):
 
 # =====================================================
 # GET STUDENT PAYMENTS
+# Finance Officer / Admin
 # =====================================================
 
+@role_required("finance", "admin")
 def get_student_payments(student_id):
 
     try:
@@ -149,8 +164,10 @@ def get_student_payments(student_id):
 
 # =====================================================
 # UPDATE PAYMENT STATUS
+# Finance Officer / Admin
 # =====================================================
 
+@role_required("finance", "admin")
 def update_payment_status(payment_id):
 
     try:
@@ -165,7 +182,9 @@ def update_payment_status(payment_id):
         )
 
         return jsonify({
-            "message": "Payment status updated successfully",
+            "message": (
+                "Payment status updated successfully"
+            ),
             "payment": payment.to_dict()
         }), 200
 
@@ -190,8 +209,10 @@ def update_payment_status(payment_id):
 
 # =====================================================
 # DELETE PAYMENT
+# Finance Officer / Admin
 # =====================================================
 
+@role_required("finance", "admin")
 def delete_payment(payment_id):
 
     try:
@@ -215,19 +236,26 @@ def delete_payment(payment_id):
         return jsonify({
             "error": str(error)
         }), 500
-        
 
+
+# =====================================================
+# GET CURRENT STUDENT'S PAYMENTS
+# Student only
+# =====================================================
+
+@role_required("student")
 def get_my_payments():
 
     try:
 
-        user_id = int(get_jwt_identity())
+        user_id = get_current_user_id()
 
         student = Student.query.filter_by(
             user_id=user_id
         ).first()
 
         if not student:
+
             return jsonify({
                 "error": "Student profile not found"
             }), 404
@@ -242,6 +270,86 @@ def get_my_payments():
                 for payment in payments
             ]
         }), 200
+
+    except Exception as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 500
+
+
+# =====================================================
+# GET CURRENT STUDENT FINANCIAL STATUS
+# Student only
+# =====================================================
+
+@role_required("student")
+def get_my_financial_status():
+
+    try:
+
+        user_id = get_current_user_id()
+
+        student = Student.query.filter_by(
+            user_id=user_id
+        ).first()
+
+        if not student:
+
+            return jsonify({
+                "error": "Student profile not found"
+            }), 404
+
+        financial_status = (
+            PaymentService
+            .get_student_financial_status(
+                student.id
+            )
+        )
+
+        return jsonify({
+            "financial_status": financial_status
+        }), 200
+
+    except ValueError as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 404
+
+    except Exception as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 500
+
+
+# =====================================================
+# GET ANY STUDENT FINANCIAL STATUS
+# Finance Officer / Admin
+# =====================================================
+
+@role_required("finance", "admin")
+def get_student_financial_status(student_id):
+
+    try:
+
+        financial_status = (
+            PaymentService
+            .get_student_financial_status(
+                student_id
+            )
+        )
+
+        return jsonify({
+            "financial_status": financial_status
+        }), 200
+
+    except ValueError as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 404
 
     except Exception as error:
 

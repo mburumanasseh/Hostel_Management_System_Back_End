@@ -3,9 +3,17 @@ from marshmallow import Schema, fields, validate
 
 class PaymentSchema(Schema):
 
+    # ==========================================
+    # STUDENT
+    # ==========================================
+
     student_id = fields.Int(
         required=True
     )
+
+    # ==========================================
+    # PAYMENT AMOUNT
+    # ==========================================
 
     amount = fields.Decimal(
         required=True,
@@ -15,6 +23,10 @@ class PaymentSchema(Schema):
         )
     )
 
+    # ==========================================
+    # SEMESTER
+    # ==========================================
+
     semester = fields.Str(
         required=True,
         validate=validate.Length(
@@ -22,6 +34,10 @@ class PaymentSchema(Schema):
             max=30
         )
     )
+
+    # ==========================================
+    # PAYMENT STATUS
+    # ==========================================
 
     status = fields.Str(
         required=False,
@@ -32,6 +48,10 @@ class PaymentSchema(Schema):
             "Failed"
         ])
     )
+
+    # ==========================================
+    # PAYMENT REFERENCE
+    # ==========================================
 
     reference_number = fields.Str(
         required=True,

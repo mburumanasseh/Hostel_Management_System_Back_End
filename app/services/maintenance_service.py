@@ -1,4 +1,3 @@
-
 from app.extensions import db
 from app.models.maintenance import MaintenanceRequest
 from app.models.student import Student
@@ -36,8 +35,6 @@ class MaintenanceService:
                 "Room not found"
             )
 
-        # Make sure the student is actually
-        # allocated to this room.
         active_allocation = None
 
         for allocation in student.allocations:
@@ -79,12 +76,77 @@ class MaintenanceService:
 
             raise
 
+
+    # ==========================================================
+    # CREATE REQUEST FOR CURRENTLY LOGGED-IN STUDENT
+    # ==========================================================
+
+    @staticmethod
+    def create_request_for_student(
+        user_id,
+        title,
+        description,
+        priority="Medium"
+    ):
+
+        # Find the student profile belonging
+        # to the logged-in user.
+        student = Student.query.filter_by(
+            user_id=user_id
+        ).first()
+
+        if not student:
+            raise ValueError(
+                "Student profile not found"
+            )
+
+        # Find the student's active allocation.
+        active_allocation = None
+
+        for allocation in student.allocations:
+
+            if allocation.status == "Active":
+                active_allocation = allocation
+                break
+
+        if not active_allocation:
+            raise ValueError(
+                "You are not currently allocated to a room"
+            )
+
+        maintenance_request = MaintenanceRequest(
+            student_id=student.id,
+            room_id=active_allocation.room_id,
+            title=title,
+            description=description,
+            priority=priority,
+            status="Pending"
+        )
+
+        try:
+
+            db.session.add(
+                maintenance_request
+            )
+
+            db.session.commit()
+
+            return maintenance_request
+
+        except Exception:
+
+            db.session.rollback()
+
+            raise
+
+
     @staticmethod
     def get_all_requests():
 
         return MaintenanceRequest.query.order_by(
             MaintenanceRequest.id.desc()
         ).all()
+
 
     @staticmethod
     def get_request_by_id(request_id):
@@ -93,6 +155,7 @@ class MaintenanceService:
             MaintenanceRequest,
             request_id
         )
+
 
     @staticmethod
     def get_student_requests(student_id):
@@ -112,6 +175,7 @@ class MaintenanceService:
         ).order_by(
             MaintenanceRequest.id.desc()
         ).all()
+
 
     @staticmethod
     def update_status(
@@ -142,6 +206,7 @@ class MaintenanceService:
             db.session.rollback()
 
             raise
+
 
     @staticmethod
     def delete_request(request_id):

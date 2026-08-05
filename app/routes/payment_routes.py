@@ -1,5 +1,5 @@
+
 from flask import Blueprint
-from flask_jwt_extended import jwt_required
 
 from app.controllers.payment_controller import (
     create_payment,
@@ -8,10 +8,10 @@ from app.controllers.payment_controller import (
     get_student_payments,
     get_my_payments,
     update_payment_status,
-    delete_payment
+    delete_payment,
+    get_my_financial_status,
+    get_student_financial_status
 )
-
-from app.utils.authorization import role_required
 
 
 payment_bp = Blueprint(
@@ -30,89 +30,85 @@ payment_bp.route(
     "",
     methods=["POST"]
 )(
-    role_required(
-        "admin",
-        "finance"
-    )(
-        create_payment
-    )
+    create_payment
 )
 
 
 # =====================================================
 # GET ALL PAYMENTS
-# ADMIN + FINANCE + WARDEN
+# ADMIN + FINANCE
 # =====================================================
 
 payment_bp.route(
     "",
     methods=["GET"]
 )(
-    role_required(
-        "admin",
-        "finance",
-        "warden"
-    )(
-        get_all_payments
-    )
+    get_all_payments
 )
 
 
 # =====================================================
 # GET CURRENT STUDENT'S PAYMENTS
-# STUDENT ONLY / AUTHENTICATED USERS
+# STUDENT ONLY
 # =====================================================
 
 payment_bp.route(
     "/my",
     methods=["GET"]
 )(
-    jwt_required()(
-        get_my_payments
-    )
+    get_my_payments
+)
+
+
+# =====================================================
+# GET CURRENT STUDENT'S FINANCIAL STATUS
+# STUDENT ONLY
+# =====================================================
+
+payment_bp.route(
+    "/my/status",
+    methods=["GET"]
+)(
+    get_my_financial_status
 )
 
 
 # =====================================================
 # GET ONE PAYMENT
-# ADMIN + FINANCE + WARDEN
-#
-# Students use /my instead so they cannot request
-# another student's payment by changing the ID.
+# ADMIN + FINANCE
 # =====================================================
 
 payment_bp.route(
     "/<int:payment_id>",
     methods=["GET"]
 )(
-    role_required(
-        "admin",
-        "finance",
-        "warden"
-    )(
-        get_payment
-    )
+    get_payment
 )
 
 
 # =====================================================
 # GET PAYMENTS FOR A SPECIFIC STUDENT
-# ADMIN + FINANCE + WARDEN
-#
-# Students should use /my instead.
+# ADMIN + FINANCE
 # =====================================================
 
 payment_bp.route(
     "/student/<int:student_id>",
     methods=["GET"]
 )(
-    role_required(
-        "admin",
-        "finance",
-        "warden"
-    )(
-        get_student_payments
-    )
+    get_student_payments
+)
+
+
+# =====================================================
+# GET SPECIFIC STUDENT FINANCIAL STATUS
+# ADMIN + FINANCE
+# =====================================================
+
+payment_bp.route(
+    "/student/<int:student_id>/status",
+    methods=["GET"]
+)(
+    get_student_financial_status
 )
 
 
@@ -125,12 +121,7 @@ payment_bp.route(
     "/<int:payment_id>/status",
     methods=["PATCH"]
 )(
-    role_required(
-        "admin",
-        "finance"
-    )(
-        update_payment_status
-    )
+    update_payment_status
 )
 
 
@@ -143,9 +134,5 @@ payment_bp.route(
     "/<int:payment_id>",
     methods=["DELETE"]
 )(
-    role_required(
-        "admin"
-    )(
-        delete_payment
-    )
+    delete_payment
 )

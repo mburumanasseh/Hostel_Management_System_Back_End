@@ -11,7 +11,10 @@ from app.extensions import db
 class Student(db.Model):
     __tablename__ = "students"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     user_id = db.Column(
         db.Integer,
@@ -26,21 +29,33 @@ class Student(db.Model):
         nullable=False
     )
 
-    gender = db.Column(db.Enum(
-        "Male",
-        "Female",
-        name="gender_types"
-    ))
+    gender = db.Column(
+        db.Enum(
+            "Male",
+            "Female",
+            name="gender_types"
+        )
+    )
 
-    phone = db.Column(db.String(20))
+    phone = db.Column(
+        db.String(20)
+    )
 
-    course = db.Column(db.String(100))
+    course = db.Column(
+        db.String(100)
+    )
 
-    year_of_study = db.Column(db.Integer)
+    year_of_study = db.Column(
+        db.Integer
+    )
 
-    guardian_name = db.Column(db.String(100))
+    guardian_name = db.Column(
+        db.String(100)
+    )
 
-    guardian_phone = db.Column(db.String(20))
+    guardian_phone = db.Column(
+        db.String(20)
+    )
 
     created_at = db.Column(
         db.DateTime,
@@ -53,7 +68,9 @@ class Student(db.Model):
         onupdate=datetime.utcnow
     )
 
-    # Relationships
+    # ==========================================
+    # RELATIONSHIPS
+    # ==========================================
 
     user = db.relationship(
         "User",
@@ -78,25 +95,98 @@ class Student(db.Model):
         cascade="all, delete-orphan"
     )
 
+    # ==========================================
+    # CONVERT TO DICTIONARY
+    # ==========================================
+
+    
     def to_dict(self):
+
+        active_allocation = next(
+            (
+                allocation
+                for allocation in self.allocations
+                if allocation.status == "Active"
+            ),
+            None
+        )
+
         return {
             "id": self.id,
+
             "user_id": self.user_id,
+
+            # ==================================
+            # USER ACCOUNT INFORMATION
+            # ==================================
+
+            "first_name": (
+                self.user.first_name
+                if self.user
+                else None
+            ),
+
+            "last_name": (
+                self.user.last_name
+                if self.user
+                else None
+            ),
+
+            "email": (
+                self.user.email
+                if self.user
+                else None
+            ),
+
+            "role": (
+                self.user.role
+                if self.user
+                else None
+            ),
+
+            # ==================================
+            # STUDENT INFORMATION
+            # ==================================
+
             "registration_number": self.registration_number,
+
             "gender": self.gender,
+
             "phone": self.phone,
+
             "course": self.course,
+
             "year_of_study": self.year_of_study,
+
             "guardian_name": self.guardian_name,
+
             "guardian_phone": self.guardian_phone,
+
+            # ==================================
+            # ACTIVE ALLOCATION
+            # ==================================
+
+            "active_allocation": (
+                active_allocation.to_dict(
+                    include_student=False
+                )
+                if active_allocation
+                else None
+            ),
+
+            # ==================================
+            # TIMESTAMPS
+            # ==================================
+
             "created_at": (
                 self.created_at.isoformat()
                 if self.created_at
                 else None
             ),
+
             "updated_at": (
                 self.updated_at.isoformat()
                 if self.updated_at
                 else None
-        )
-    }
+            )
+        }

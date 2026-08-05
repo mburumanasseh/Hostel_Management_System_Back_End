@@ -1,4 +1,3 @@
-
 from marshmallow import Schema, fields, validate
 
 
@@ -29,14 +28,6 @@ class MaintenanceRequestSchema(Schema):
             "High",
             "Urgent"
         ])
-    )
-
-    student_id = fields.Int(
-        required=True
-    )
-
-    room_id = fields.Int(
-        required=True
     )
 
 

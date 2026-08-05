@@ -76,10 +76,50 @@ class Allocation(db.Model):
     # CONVERT TO DICTIONARY
     # ==========================================
 
-    def to_dict(self):
+
+    def to_dict(self, include_student=True):
         return {
             "id": self.id,
+
+            # ==================================
+            # STUDENT INFORMATION
+            # ==================================
+
             "student_id": self.student_id,
+
+            "student": (
+                {
+                    "id": self.student.id,
+
+                    "first_name": (
+                        self.student.user.first_name
+                        if self.student.user
+                        else None
+                    ),
+
+                    "last_name": (
+                        self.student.user.last_name
+                        if self.student.user
+                        else None
+                    ),
+
+                    "email": (
+                        self.student.user.email
+                        if self.student.user
+                        else None
+                    ),
+
+                    "registration_number": (
+                        self.student.registration_number
+                    )
+                }
+                if include_student and self.student
+                else None
+            ),
+
+            # ==================================
+            # ALLOCATION INFORMATION
+            # ==================================
 
             "allocation_date": (
                 self.allocation_date.isoformat()
@@ -99,24 +139,34 @@ class Allocation(db.Model):
             # ROOM INFORMATION
             # ==================================
 
-            "room": {
-                "id": self.room.id,
-                "room_number": self.room.room_number,
-                "floor": self.room.floor,
-                "capacity": self.room.capacity,
-                "status": self.room.status,
+            "room": (
+                {
+                    "id": self.room.id,
 
-                # ==============================
-                # BLOCK INFORMATION
-                # ==============================
+                    "room_number": self.room.room_number,
 
-                "block": {
-                    "id": self.room.block.id,
-                    "name": self.room.block.name
+                    "floor": self.room.floor,
+
+                    "capacity": self.room.capacity,
+
+                    "occupied": self.room.occupied,
+
+                    "status": self.room.status,
+
+                    # ==============================
+                    # BLOCK INFORMATION
+                    # ==============================
+
+                    "block": (
+                        {
+                            "id": self.room.block.id,
+                            "name": self.room.block.name
+                        }
+                        if self.room.block
+                        else None
+                    )
                 }
-                if self.room.block
+                if self.room
                 else None
-            }
-            if self.room
-            else None
+            )
         }

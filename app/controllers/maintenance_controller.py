@@ -1,7 +1,7 @@
-
 from flask import request, jsonify
 from marshmallow import ValidationError
 from flask_jwt_extended import get_jwt_identity
+
 from app.models.student import Student
 
 from app.schemas.maintenance_schema import (
@@ -18,17 +18,31 @@ maintenance_schema = MaintenanceRequestSchema()
 maintenance_status_schema = MaintenanceStatusSchema()
 
 
+# ==========================================================
+# CREATE MAINTENANCE REQUEST
+# ==========================================================
+
 def create_maintenance_request():
 
     try:
+
         data = maintenance_schema.load(
             request.get_json()
         )
 
+        # Get the currently logged-in user.
+        user_id = int(
+            get_jwt_identity()
+        )
+
+        # Automatically determine:
+        # - student
+        # - active room
+        #
+        # from the logged-in account.
         maintenance_request = (
-            MaintenanceService.create_request(
-                student_id=data["student_id"],
-                room_id=data["room_id"],
+            MaintenanceService.create_request_for_student(
+                user_id=user_id,
                 title=data["title"],
                 description=data["description"],
                 priority=data.get(
@@ -62,6 +76,10 @@ def create_maintenance_request():
         }), 500
 
 
+# ==========================================================
+# GET ALL MAINTENANCE REQUESTS
+# ==========================================================
+
 def get_all_maintenance_requests():
 
     try:
@@ -83,6 +101,10 @@ def get_all_maintenance_requests():
             "error": str(error)
         }), 500
 
+
+# ==========================================================
+# GET ONE MAINTENANCE REQUEST
+# ==========================================================
 
 def get_maintenance_request(request_id):
 
@@ -110,6 +132,10 @@ def get_maintenance_request(request_id):
             "error": str(error)
         }), 500
 
+
+# ==========================================================
+# GET STUDENT MAINTENANCE REQUESTS
+# ==========================================================
 
 def get_student_maintenance_requests(
     student_id
@@ -142,6 +168,52 @@ def get_student_maintenance_requests(
             "error": str(error)
         }), 500
 
+
+# ==========================================================
+# GET MY MAINTENANCE REQUESTS
+# ==========================================================
+
+def get_my_maintenance_requests():
+
+    try:
+
+        user_id = int(
+            get_jwt_identity()
+        )
+
+        student = Student.query.filter_by(
+            user_id=user_id
+        ).first()
+
+        if not student:
+
+            return jsonify({
+                "error": "Student profile not found"
+            }), 404
+
+        requests = (
+            MaintenanceService.get_student_requests(
+                student.id
+            )
+        )
+
+        return jsonify({
+            "requests": [
+                maintenance_request.to_dict()
+                for maintenance_request in requests
+            ]
+        }), 200
+
+    except Exception as error:
+
+        return jsonify({
+            "error": str(error)
+        }), 500
+
+
+# ==========================================================
+# UPDATE MAINTENANCE STATUS
+# ==========================================================
 
 def update_maintenance_status(
     request_id
@@ -184,6 +256,10 @@ def update_maintenance_status(
         }), 500
 
 
+# ==========================================================
+# DELETE MAINTENANCE REQUEST
+# ==========================================================
+
 def delete_maintenance_request(
     request_id
 ):
@@ -203,39 +279,6 @@ def delete_maintenance_request(
         return jsonify({
             "error": str(error)
         }), 404
-
-    except Exception as error:
-
-        return jsonify({
-            "error": str(error)
-        }), 500
-
-
-def get_my_maintenance_requests():
-
-    try:
-
-        user_id = int(get_jwt_identity())
-
-        student = Student.query.filter_by(
-            user_id=user_id
-        ).first()
-
-        if not student:
-            return jsonify({
-                "error": "Student profile not found"
-            }), 404
-
-        requests = MaintenanceService.get_student_requests(
-            student.id
-        )
-
-        return jsonify({
-            "requests": [
-                maintenance_request.to_dict()
-                for maintenance_request in requests
-            ]
-        }), 200
 
     except Exception as error:
 
