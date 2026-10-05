@@ -25,7 +25,7 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=2)
 
     SQLALCHEMY_DATABASE_URI = (
-        f"mysql+pymysql://"
+        f"postgresql+psycopg2://"
         f"{os.getenv('DB_USER')}:"
         f"{os.getenv('DB_PASSWORD')}@"
         f"{os.getenv('DB_HOST')}:"
