@@ -6,15 +6,17 @@ Flask API for the Zabe Hostel Management System.
 
 **PostgreSQL** (migrated from MySQL).
 
-Connection is configured via environment variables (see `.env.example`):
+Connection is configured via environment variables in a local `.env` file (gitignored):
 
-| Variable      | Example          |
-|---------------|------------------|
-| `DB_USER`     | `postgres`       |
-| `DB_PASSWORD` | `your_password`  |
-| `DB_HOST`     | `localhost`      |
-| `DB_PORT`     | `5432`           |
-| `DB_NAME`     | `zabe_hostel_db` |
+| Variable      | Example                |
+|---------------|------------------------|
+| `DB_USER`     | `hostel_user`          |
+| `DB_PASSWORD` | `your_password`        |
+| `DB_HOST`     | `localhost`            |
+| `DB_PORT`     | `5432`                 |
+| `DB_NAME`     | `hostel_management_db` |
+| `SECRET_KEY`  | long random string     |
+| `JWT_SECRET_KEY` | long random string  |
 
 SQLAlchemy URI format: `postgresql+psycopg2://...`
 
@@ -23,13 +25,11 @@ SQLAlchemy URI format: `postgresql+psycopg2://...`
 ```bash
 # 1. Install dependencies
 pipenv install
-# (this will resolve psycopg2-binary and update Pipfile.lock)
 
-# 2. Copy env and fill in values
-cp .env.example .env
+# 2. Create a local .env with the variables above
 
-# 3. Create the PostgreSQL database
-createdb zabe_hostel_db   # or via psql / your host provider
+# 3. Create the PostgreSQL database (if needed)
+#    via psql or createdb
 
 # 4. Run migrations
 export FLASK_APP=run.py
