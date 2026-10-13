@@ -15,6 +15,31 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _database_uri():
+    """
+    Prefer DATABASE_URL (Render / Heroku style).
+    Fall back to individual DB_* variables for local setup.
+    """
+    url = os.getenv("DATABASE_URL")
+    if url:
+        # Render sometimes provides postgres:// — SQLAlchemy needs postgresql://
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        # Ensure psycopg2 driver is explicit when scheme is bare postgresql
+        if url.startswith("postgresql://") and "+psycopg2" not in url:
+            url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return url
+
+    return (
+        f"postgresql+psycopg2://"
+        f"{os.getenv('DB_USER')}:"
+        f"{os.getenv('DB_PASSWORD')}@"
+        f"{os.getenv('DB_HOST')}:"
+        f"{os.getenv('DB_PORT')}/"
+        f"{os.getenv('DB_NAME')}"
+    )
+
+
 class Config:
     """Base configuration."""
 
@@ -24,14 +49,7 @@ class Config:
 
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=2)
 
-    SQLALCHEMY_DATABASE_URI = (
-        f"postgresql+psycopg2://"
-        f"{os.getenv('DB_USER')}:"
-        f"{os.getenv('DB_PASSWORD')}@"
-        f"{os.getenv('DB_HOST')}:"
-        f"{os.getenv('DB_PORT')}/"
-        f"{os.getenv('DB_NAME')}"
-    )
+    SQLALCHEMY_DATABASE_URI = _database_uri()
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -51,5 +69,5 @@ class ProductionConfig(Config):
 config = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
-    "default": DevelopmentConfig
+    "default": DevelopmentConfig,
 }
