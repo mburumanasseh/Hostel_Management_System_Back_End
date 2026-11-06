@@ -270,3 +270,64 @@ def delete_allocation(allocation_id):
         return jsonify({
             "error": str(error)
         }), 500
+
+
+def book_room():
+    """
+    Logged-in student books a room for themselves.
+    Body: { "room_id": <int> }
+    """
+    try:
+        data = request.get_json() or {}
+        room_id = data.get("room_id")
+
+        if room_id is None:
+            return jsonify({
+                "error": "room_id is required"
+            }), 400
+
+        try:
+            room_id = int(room_id)
+        except (TypeError, ValueError):
+            return jsonify({
+                "error": "room_id must be an integer"
+            }), 400
+
+        user_id = int(get_jwt_identity())
+
+        allocation = AllocationService.book_room(
+            user_id=user_id,
+            room_id=room_id
+        )
+
+        return jsonify({
+            "message": "Room booked successfully",
+            "allocation": allocation.to_dict()
+        }), 201
+
+    except ValueError as error:
+        return jsonify({
+            "error": str(error)
+        }), 409
+
+    except Exception as error:
+        return jsonify({
+            "error": str(error)
+        }), 500
+
+
+def get_available_rooms_for_booking():
+    """
+    List rooms that still have free beds.
+    Students use this when choosing a room.
+    """
+    try:
+        rooms = AllocationService.get_available_rooms()
+        return jsonify({
+            "count": len(rooms),
+            "rooms": [room.to_dict() for room in rooms]
+        }), 200
+    except Exception as error:
+        return jsonify({
+            "error": str(error)
+        }), 500

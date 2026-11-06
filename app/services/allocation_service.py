@@ -86,6 +86,43 @@ class AllocationService:
             db.session.rollback()
             raise
 
+
+    @staticmethod
+    def book_room(user_id, room_id):
+        """
+        Student self-service room booking.
+        Resolves the student profile from the logged-in user.
+        """
+        student = Student.query.filter_by(
+            user_id=user_id
+        ).first()
+
+        if not student:
+            raise ValueError(
+                "Student profile not found. Complete registration first."
+            )
+
+        return AllocationService.create_allocation(
+            student_id=student.id,
+            room_id=room_id
+        )
+
+    @staticmethod
+    def get_available_rooms():
+        """
+        Rooms with free capacity and not under maintenance.
+        """
+        rooms = Room.query.order_by(Room.id.asc()).all()
+        available = []
+        for room in rooms:
+            if room.status == "Maintenance":
+                continue
+            capacity = room.capacity or 0
+            occupied = room.occupied or 0
+            if occupied < capacity:
+                available.append(room)
+        return available
+
     @staticmethod
     def get_all_allocations():
 

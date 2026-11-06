@@ -8,7 +8,9 @@ from app.controllers.allocation_controller import (
     get_active_allocation,
     get_my_allocation,
     complete_allocation,
-    delete_allocation
+    delete_allocation,
+    book_room,
+    get_available_rooms_for_booking,
 )
 
 from app.utils.authorization import role_required
@@ -18,6 +20,26 @@ allocation_bp = Blueprint(
     "allocations",
     __name__,
     url_prefix="/api/allocations"
+)
+
+
+# Student: list rooms with free beds
+allocation_bp.route(
+    "/available-rooms",
+    methods=["GET"]
+)(
+    role_required("student", "admin", "warden")(
+        get_available_rooms_for_booking
+    )
+)
+
+
+# Student: book a room for themselves
+allocation_bp.route(
+    "/book",
+    methods=["POST"]
+)(
+    role_required("student")(book_room)
 )
 
 
