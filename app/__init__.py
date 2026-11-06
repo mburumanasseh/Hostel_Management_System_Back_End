@@ -65,4 +65,16 @@ def create_app(config_name="default"):
             "status": "success"
         }, 200
 
+    @app.route("/health")
+    @app.route("/api/health")
+    def health():
+        """
+        Lightweight keep-alive / load-balancer probe.
+        No auth. Does not touch the database.
+        """
+        return {
+            "status": "ok",
+            "service": "hostel-management-api",
+        }, 200
+
     return app
