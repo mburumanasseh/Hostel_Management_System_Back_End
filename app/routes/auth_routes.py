@@ -5,7 +5,8 @@ from app.controllers.auth_controller import (
     register,
     register_staff,
     login,
-    get_current_user
+    get_current_user,
+    bootstrap_admin,
 )
 
 
@@ -62,4 +63,16 @@ auth_bp.route(
     methods=["GET"]
 )(
     get_current_user
+)
+
+
+# ==========================================
+# BOOTSTRAP FIRST ADMIN (only if no admin exists)
+# ==========================================
+
+auth_bp.route(
+    "/bootstrap-admin",
+    methods=["POST"]
+)(
+    bootstrap_admin
 )

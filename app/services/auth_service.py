@@ -146,6 +146,55 @@ class AuthService:
 
         return user
 
+
+    # ==========================================
+    # BOOTSTRAP FIRST ADMIN (no admin exists yet)
+    # ==========================================
+
+    @staticmethod
+    def bootstrap_admin(
+        first_name,
+        last_name,
+        email,
+        password
+    ):
+        existing_admin = User.query.filter_by(
+            role="admin"
+        ).first()
+
+        if existing_admin:
+            raise ValueError(
+                "An admin account already exists"
+            )
+
+        existing_user = User.query.filter_by(
+            email=email
+        ).first()
+
+        if existing_user:
+            raise ValueError(
+                "Email already registered"
+            )
+
+        hashed_password = (
+            bcrypt
+            .generate_password_hash(password)
+            .decode("utf-8")
+        )
+
+        user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=hashed_password,
+            role="admin"
+        )
+
+        db.session.add(user)
+        db.session.commit()
+
+        return user
+
     # ==========================================
     # LOGIN
     # ==========================================

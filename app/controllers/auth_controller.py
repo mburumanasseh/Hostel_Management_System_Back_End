@@ -181,3 +181,36 @@ def get_current_user():
         return jsonify({
             "error": str(error)
         }), 500
+
+
+# ==========================================
+# BOOTSTRAP FIRST ADMIN
+# ==========================================
+
+def bootstrap_admin():
+    """
+    Create the first admin when the database has none.
+    Disabled automatically once any admin exists.
+    """
+    try:
+        data = RegisterSchema(partial=("registration_number",)).load(
+            request.get_json() or {}
+        )
+    except ValidationError as error:
+        return jsonify({"error": error.messages}), 400
+
+    try:
+        user = AuthService.bootstrap_admin(
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            email=data["email"],
+            password=data["password"],
+        )
+        return jsonify({
+            "message": "Admin account created successfully",
+            "user": user.to_dict()
+        }), 201
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception as error:
+        return jsonify({"error": str(error)}), 500
