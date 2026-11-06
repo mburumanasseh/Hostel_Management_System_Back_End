@@ -8,7 +8,8 @@ from marshmallow import ValidationError
 from app.schemas.auth_schema import (
     RegisterSchema,
     StaffRegisterSchema,
-    LoginSchema
+    LoginSchema,
+    ChangePasswordSchema,
 )
 
 from app.services.auth_service import AuthService
@@ -18,6 +19,7 @@ from app.utils.authorization import role_required
 register_schema = RegisterSchema()
 staff_register_schema = StaffRegisterSchema()
 login_schema = LoginSchema()
+change_password_schema = ChangePasswordSchema()
 
 
 # ==========================================
@@ -210,6 +212,34 @@ def bootstrap_admin():
             "message": "Admin account created successfully",
             "user": user.to_dict()
         }), 201
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    except Exception as error:
+        return jsonify({"error": str(error)}), 500
+
+
+@jwt_required()
+def change_password():
+    """
+    Authenticated user changes their own password.
+    Requires current password and new password confirmed twice.
+    """
+    try:
+        data = change_password_schema.load(request.get_json() or {})
+    except ValidationError as error:
+        return jsonify({"error": error.messages}), 400
+
+    try:
+        user_id = get_jwt_identity()
+        AuthService.change_password(
+            user_id=user_id,
+            current_password=data["current_password"],
+            new_password=data["new_password"],
+            confirm_password=data["confirm_password"],
+        )
+        return jsonify({
+            "message": "Password changed successfully"
+        }), 200
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except Exception as error:

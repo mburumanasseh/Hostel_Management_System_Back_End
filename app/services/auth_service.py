@@ -230,6 +230,35 @@ class AuthService:
     # GET USER BY ID
     # ==========================================
 
+
+    @staticmethod
+    def change_password(user_id, current_password, new_password, confirm_password):
+        if new_password != confirm_password:
+            raise ValueError("New password and confirmation do not match")
+
+        if len(new_password) < 6:
+            raise ValueError("New password must be at least 6 characters")
+
+        if current_password == new_password:
+            raise ValueError("New password must be different from current password")
+
+        user = db.session.get(User, int(user_id))
+
+        if not user:
+            raise ValueError("User not found")
+
+        if not bcrypt.check_password_hash(user.password, current_password):
+            raise ValueError("Current password is incorrect")
+
+        user.password = (
+            bcrypt
+            .generate_password_hash(new_password)
+            .decode("utf-8")
+        )
+
+        db.session.commit()
+        return user
+
     @staticmethod
     def get_user_by_id(user_id):
 

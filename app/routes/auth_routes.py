@@ -7,6 +7,7 @@ from app.controllers.auth_controller import (
     login,
     get_current_user,
     bootstrap_admin,
+    change_password,
 )
 
 
@@ -75,4 +76,16 @@ auth_bp.route(
     methods=["POST"]
 )(
     bootstrap_admin
+)
+
+
+# ==========================================
+# CHANGE PASSWORD (authenticated)
+# ==========================================
+
+auth_bp.route(
+    "/change-password",
+    methods=["POST"]
+)(
+    change_password
 )

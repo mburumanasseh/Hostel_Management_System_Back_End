@@ -83,3 +83,23 @@ class LoginSchema(Schema):
         required=True,
         load_only=True
     )
+
+
+class ChangePasswordSchema(Schema):
+    current_password = fields.Str(
+        required=True,
+        load_only=True,
+        validate=validate.Length(min=6)
+    )
+
+    new_password = fields.Str(
+        required=True,
+        load_only=True,
+        validate=validate.Length(min=6)
+    )
+
+    confirm_password = fields.Str(
+        required=True,
+        load_only=True,
+        validate=validate.Length(min=6)
+    )
